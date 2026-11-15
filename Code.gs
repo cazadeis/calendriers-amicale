@@ -9,6 +9,8 @@ const COLONNES = {
     'cheques_attendus', 'cheques_comptes', 'nb_cheques_attendus', 'nb_cheques_comptes', 'ecart'],
 };
 const DATES = ['date', 'ajoute_le'];
+// L'apostrophe force le texte : "2-4" ne devient pas une date, "=..." pas une formule.
+function texte_(v) { return typeof v === 'string' && v !== '' ? "'" + v : v; }
 
 function feuille_(nom) { return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nom); }
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
@@ -19,7 +21,7 @@ function lignes_(nom) {
   const v = feuille_(nom).getDataRange().getValues();
   const h = v.shift();
   return v.filter(r => r.some(c => c !== ''))
-    .map(r => Object.fromEntries(h.map((k, i) => [k, typeof r[i] === 'string' ? r[i].trim() : r[i]])));
+    .map(r => Object.fromEntries(h.map((k, i) => [k, typeof r[i] === 'string' ? r[i].trim() : r[i]]).filter(([k]) => k)));
 }
 
 // Foyers ajoutes a la main dans le Sheet sans id : on leur en donne un.
@@ -66,14 +68,14 @@ function doPost(e) {
       if (op.type === 'comment') {
         const sh = feuille_('Foyers');
         const i = sh.getRange('A:A').getValues().flat().map(String).indexOf(d.id);
-        if (i > 0) sh.getRange(i + 1, 6).setValue(d.commentaire);
+        if (i > 0) sh.getRange(i + 1, 6).setValue(texte_(d.commentaire));
       } else if (COLONNES[op.type]) {
         const sh = feuille_(op.type);
         if (!vus[op.type]) vus[op.type] = new Set(sh.getDataRange().getValues().map(r => cle_(op.type, r)));
         const ligne = COLONNES[op.type].map(k => (DATES.includes(k) && d[k] ? new Date(d[k]) : (d[k] ?? '')));
         const cle = cle_(op.type, ligne);
         if (!vus[op.type].has(cle)) {
-          sh.appendRow(ligne);
+          sh.appendRow(ligne.map(texte_));
           vus[op.type].add(cle);
         }
       }

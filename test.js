@@ -46,12 +46,14 @@ const feuilles = {
     ['old', new Date(), 2026, 'T1', 'f0', 'Eric', 'Don', 5, 'Espèces', '']],
   Caisse: [['id']],
 };
+// Comme Google Sheets : une apostrophe en tete force le texte puis disparait.
+const sansApostrophe = v => (typeof v === 'string' && v[0] === "'" ? v.slice(1) : v);
 const feuille = n => ({
   getDataRange: () => ({ getValues: () => feuilles[n].map(r => [...r]) }),
   getRange: (a, col) => typeof a === 'string'
     ? { getValues: () => feuilles[n].map(r => [r[0]]) }
-    : { setValue: v => { feuilles[n][a - 1][col - 1] = v; } },
-  appendRow: r => feuilles[n].push(r),
+    : { setValue: v => { feuilles[n][a - 1][col - 1] = sansApostrophe(v); } },
+  appendRow: r => feuilles[n].push(r.map(sansApostrophe)),
 });
 const ctx = {
   SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: feuille }) },
@@ -80,6 +82,9 @@ assert.equal(feuilles.Foyers.length, 3);
 assert.equal(feuilles.Passages.length, 3);
 assert.equal(feuilles.Rues.length, 2);
 assert.equal(feuilles.Foyers[2][5], 'sonner fort');
+assert.equal(feuilles.Foyers[2][3], '7');
+assert.equal(ctx.texte_('2-4'), "'2-4"); // texte force cote Sheet
+assert.equal(ctx.texte_(12.5), 12.5);
 assert.equal(Object.prototype.toString.call(feuilles.Passages[2][1]), '[object Date]');
 assert.equal(ctx.doGet().passages[0].montant, 20);
 assert.equal(post([{ opId: 'x', type: 'Foyers' }]).ok, false); // saisie invalide : erreur, rien de perdu cote telephone
