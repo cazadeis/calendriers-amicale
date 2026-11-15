@@ -3,7 +3,7 @@
 // ---------- Logique (testee dans test.js) ----------
 
 const MODES = ['Espèces', 'Chèque', 'Virement/QR'];
-const FAITS = ['Don', 'Refus', 'Ne pas repasser'];
+const FAITS = ['Don', 'Refus', 'Ne pas repasser', 'Déjà fait']; // "Déjà fait" : fait avant l'application (import papier), sans montant
 
 // Donnees du Sheet + saisies pas encore envoyees.
 function vue(data, queue) {
@@ -213,7 +213,7 @@ if (typeof document !== 'undefined') {
             const l = m.get(f.id) || [];
             const st = statutDe(m, f.id);
             const der = l[l.length - 1];
-            return `<button class="foyer s${['À faire', 'Don', 'Absent', 'Refus', 'Ne pas repasser', 'Rendez-vous'].indexOf(st)}" data-a="foyer" data-v="${esc(f.id)}">
+            return `<button class="foyer s${['À faire', 'Don', 'Absent', 'Refus', 'Ne pas repasser', 'Rendez-vous', 'Déjà fait'].indexOf(st)}" data-a="foyer" data-v="${esc(f.id)}">
               <span>${esc(f.numero)}${f.complement ? ' · ' + esc(f.complement) : ''}${f.commentaire ? ' 💬' : ''}</span>
               <small>${st === 'Rendez-vous' && der.rdv ? 'RDV ' + dateFr(der.rdv) : st === 'Don' ? euro(Number(der.montant) || 0) : esc(st)}${l.length > 1 ? ' · ' + l.length + ' passages' : ''}</small></button>`;
           }).join('') || '<p class="vide">Aucun foyer, ajoutez-les au fil des portes.</p>'}

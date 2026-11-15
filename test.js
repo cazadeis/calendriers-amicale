@@ -13,7 +13,8 @@ const data = {
     { id: 'f2', tournee: 'T1', rue: 'Rue B', numero: '2', complement: '' },
     { id: 'f3', tournee: 'T1', rue: 'Rue B', numero: '2', complement: '1er gauche' },
   ],
-  passages: [{ id: 'p1', date: '2026-11-15T09:00:00Z', tournee: 'T1', foyer_id: 'f1', prenom: 'Eric', statut: 'Absent' }],
+  passages: [{ id: 'p1', date: '2026-11-15T09:00:00Z', tournee: 'T1', foyer_id: 'f1', prenom: 'Eric', statut: 'Absent' },
+    { id: 'p0', date: '2026-11-01T09:00:00Z', tournee: 'T1', foyer_id: 'f3', prenom: 'Import', statut: 'Déjà fait' }],
 };
 const queue = [
   { type: 'Passages', data: { id: 'p2', date: '2026-11-15T10:00:00Z', tournee: 'T1', foyer_id: 'f1', prenom: 'Eric', statut: 'Don', montant: 10, mode: 'Espèces' } },
@@ -24,14 +25,14 @@ const queue = [
 ];
 const d = L.vue(data, queue);
 const m = L.parFoyer(d);
-assert.equal(d.passages.length, 3);
+assert.equal(d.passages.length, 4);
 assert.equal(L.statutDe(m, 'f1'), 'Don'); // le passage le plus recent l'emporte
-assert.equal(L.statutDe(m, 'f3'), 'À faire');
+assert.equal(L.statutDe(m, 'f3'), 'Déjà fait');
 assert.equal(d.foyers.find(f => f.id === 'f2').commentaire, 'chien');
 assert.equal(data.foyers[1].commentaire, undefined); // les donnees d'origine ne sont pas modifiees
 assert.deepEqual(L.ruesDe(d, 'T1'), ['Rue B', 'Rue A', 'Rue C']);
 assert.deepEqual(L.foyersDe(d, 'T1', 'Rue B').map(f => f.id), ['f2', 'f3', 'f1']); // 2 < 2 1er gauche < 10
-assert.deepEqual(L.stats(d, 'T1', m), { total: 4, faits: 2, repasser: 0, rdv: 0, montant: 25.5 });
+assert.deepEqual(L.stats(d, 'T1', m), { total: 4, faits: 3, repasser: 0, rdv: 0, montant: 25.5 });
 const c = L.caisse(d, 'Eric', L.jourLocal('2026-11-15T10:00:00Z'));
 assert.deepEqual([c.especes, c.cheques, c.nbCheques], [10, 15.5, 1]);
 assert.equal(L.montant('12,50'), 12.5);
