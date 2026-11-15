@@ -138,10 +138,12 @@ if (typeof document !== 'undefined') {
 
   function badge() {
     const n = S.queue.length;
-    const h = S.lastSync ? new Date(S.lastSync).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'jamais';
-    $('#sync').textContent = !navigator.onLine ? `📵 hors ligne${n ? ' · ' + n + ' en attente' : ''}`
+    const h = new Date(S.lastSync).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    $('#sync').textContent = !S.url ? '⚙️ non configuré'
+      : !navigator.onLine ? `📵 hors ligne${n ? ' · ' + n + ' en attente' : ''}`
       : enCours ? '🔄 synchro…'
-      : n ? `⏳ ${n} en attente` : `✓ à jour ${h}`;
+      : n ? `⏳ ${n} en attente`
+      : S.lastSync ? `✓ à jour ${h}` : '⚠️ jamais synchronisé';
     $('#sync').className = n ? 'attente' : '';
   }
 
